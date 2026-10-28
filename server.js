@@ -11,12 +11,17 @@ html = TRACKER_URL
   : html.replace(/<script src="%%TRACKER_URL%%[^>]*><\/script>\n?/, "");
 const page = Buffer.from(html);
 const vcard = fs.readFileSync(path.join(__dirname, "contacto.vcf"));
+const privacy = fs.readFileSync(path.join(__dirname, "privacidad.html"));
 
 const SECURITY = { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin" };
 
 http.createServer((req, res) => {
   const url = req.url.split("?")[0];
   if (url === "/health") { res.writeHead(200, { "Content-Type": "text/plain" }); return res.end("ok"); }
+  if (url === "/privacidad") {
+    res.writeHead(200, { ...SECURITY, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" });
+    return res.end(privacy);
+  }
   if (url === "/contacto.vcf") {
     res.writeHead(200, { ...SECURITY,
       "Content-Type": "text/vcard; charset=utf-8",
